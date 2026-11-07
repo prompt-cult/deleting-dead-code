@@ -71,12 +71,24 @@ For alpha/beta/first-release codebases: when the user asks to slim docs to the b
 ## How to delete
 
 1. **Confirm git tracking.** `git ls-files <path>` — if it returns the path, you are safe.
-2. **Use `git rm -f <path>` for whole files**, or in-line `Edit` for partial deletions inside a tracked file. Never `rm` outside git.
-3. **One target per step.** Do not bundle. The user gets a `git diff` between each delete.
-4. **Deletions only.** No additions. No replacements. No "TODO" comments. No empty stub functions. No "kept for backwards compatibility" markers. If the file is left in a broken state by the deletion, leave it broken — that is the *correct* outcome of a rationalisation pass. Working code with slop is worse than broken code without slop.
-5. **No collateral cleanup.** Do not delete adjacent code that "looks similar" or "while we're here." The next delete is a separate decision.
-6. **Do not invent replacement logic.** If you find yourself writing `function aggregateX()` to replace a deleted endpoint, stop. That is not a delete. That is a refactor wearing a delete's clothes.
-7. **Do not rename, move, or reformat in the same step.** Pure deletion only. Whitespace reflow, import reordering, and renames pollute the diff and make review harder.
+2. **Default to in-place edit for partial removal.** When removing one feature, code path, authentication branch, handler, or other aspect from a file that also contains unrelated code, edit the tracked file in place. Never delete the containing file as a shortcut.
+3. **Whole-file deletion requires the whole file to be the target.** Use `git rm -f <path>` only when the file itself is dead — not when one bad aspect lives inside an otherwise live file. Never `rm` outside git.
+4. **One target per step.** Do not bundle. The user gets a `git diff` between each delete.
+5. **Deletions only.** No additions. No replacements. No "TODO" comments. No empty stub functions. No "kept for backwards compatibility" markers. If the file is left in a broken state by the deletion, leave it broken — that is the *correct* outcome of a rationalisation pass. Working code with slop is worse than broken code without slop.
+6. **No collateral cleanup.** Do not delete adjacent code that "looks similar" or "while we're here." The next delete is a separate decision.
+7. **Do not invent replacement logic.** If you find yourself writing `function aggregateX()` to replace a deleted endpoint, stop. That is not a delete. That is a refactor wearing a delete's clothes.
+8. **Do not rename, move, or reformat in the same step.** Pure deletion only. Whitespace reflow, import reordering, and renames pollute the diff and make review harder.
+
+## Partial removal vs whole-file deletion
+
+Removing one feature or code path never authorizes deleting its containing file. Deleting a whole file to cure one bad aspect destroys unrelated working code and intellectual property.
+
+**Hard rule:**
+
+- **Below 80% removal:** edit the tracked file in place.
+- **Above 80% removal:** do not delete the file yet. Report what remains, why it remains, and request explicit user acceptance before whole-file deletion. The remaining portion is collateral damage and may contain valuable unrelated functionality; acceptance is reasonable only when the user intends to replace that remaining functionality immediately. Never infer acceptance.
+- **Callers awaiting replacement wiring are live functionality.** A missing replacement does not make a caller dead.
+- **After a partial deletion pass, verify unrelated functionality remains present.** Confirm the diff removed only the intended target and that adjacent/live code still exists. If unrelated code is gone, restore and redo the deletion as a narrower in-place edit.
 
 ## After deleting
 
@@ -120,6 +132,9 @@ Always confirm the restore with `git diff` before reporting done.
 | "I'll add a stub so callers don't break" | Broken callers are the *signal* that deletion was correct. Do not paper over. |
 | "I should add error handling for the now-missing path" | No. |
 | "This roadmap/plan doc still has useful history" | Git history has it. The doc in the working tree is a lie waiting to diverge. |
+| "I'll delete the whole file to remove this one bad feature/path" | Removing one aspect never authorizes deleting its containing file. Edit the tracked file in place. |
+| "Over 80% is gone, so I can `git rm` the file" | Report what remains and get explicit user acceptance before whole-file deletion. Never infer acceptance. |
+| "These callers have nothing to call yet, so they're dead" | Callers awaiting replacement wiring are live functionality, not dead code. |
 
 ## Why "approximately working but lying" is worse than "broken but honest"
 
@@ -145,18 +160,43 @@ Incorrect response (do not do this):
 - Also deleting `mbl_audit_json` because it has the same bug — that is a separate decision the user has not asked for.
 - Saying "I've deleted the handler. The endpoint will now return 404, which may affect the frontend." — the user knows; do not editorialise.
 
+## Example — partial removal, not whole-file deletion
+
+User: "Remove the dead authentication path from `api.py`."
+
+Correct response:
+
+1. `git ls-files api.py` → confirms tracked.
+2. Locate only the dead authentication path and its direct dead scaffolding inside `api.py`.
+3. `Edit` `api.py` to remove only those lines/blocks.
+4. `git diff api.py` → confirm only deletions, only the intended auth path, and unrelated endpoints/helpers still present.
+5. Reply: "Deleted: `api.py:<ranges>` (dead authentication path). Tracked in git — say 'restore' and I'll bring it back."
+
+Incorrect response (do not do this):
+
+- `git rm -f api.py` because it contains the unwanted auth path.
+- Deleting unrelated handlers, models, or utilities in `api.py` "while cleaning up auth."
+- Treating callers that still need replacement wiring as dead and deleting them without proof.
+
 ## Example — correct refusal
 
 User: "delete this whole module"
 
 If the module is not tracked in git: stop and ask. "`<path>` is untracked. `git rm` won't recover it. Confirm you want it deleted permanently, or commit it first so I have a restore point."
 
+User: "remove this one feature; just delete the file if that's easier"
+
+Stop and ask before any whole-file deletion. "Removing one feature does not authorize deleting `<path>`. I can edit `<path>` in place and remove only that feature. If more than 80% would be removed, I'll report what remains and ask for explicit permission before deleting the file."
+
 ## Summary
 
 Senior engineers delete dead code without ceremony because git is the safety net. This skill makes the model do the same:
 
 - Delete first when rationalisation is the intent and the file is in git.
+- For partial feature/path removal, edit the tracked file in place; never delete the containing file as a shortcut.
+- Consider whole-file deletion only when the whole file is the target or more than 80% is already purged — and above 80%, report what remains and get explicit user acceptance before deleting.
+- Treat callers awaiting replacement wiring as live functionality.
 - Atomic, deletions-only, no replacements, no collateral.
-- Verify with `git diff`.
+- Verify with `git diff`, including that unrelated functionality remains present after partial removal.
 - Tell the user the path and that restore is one command.
-- Refuse only when the file is untracked or the user asked for a refactor.
+- Refuse or ask when the file is untracked, the user asked for a refactor, or whole-file deletion lacks explicit acceptance.
