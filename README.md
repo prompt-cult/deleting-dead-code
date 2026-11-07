@@ -8,7 +8,7 @@ Skip the manifesto, [jump to Install](#install) — or one-liner it:
 
 ```bash
 mkdir -p ~/.claude/skills/deleting-dead-code && \
-  curl -fsSL https://raw.githubusercontent.com/simbo1905/deleting-dead-code/main/SKILL.md \
+  curl -fsSL https://raw.githubusercontent.com/prompt-cult/deleting-dead-code/main/SKILL.md \
   -o ~/.claude/skills/deleting-dead-code/SKILL.md
 ```
 
@@ -106,28 +106,28 @@ The skill encodes the discipline so the model applies it without having to be br
 
 ```bash
 mkdir -p ~/.claude/skills
-git clone https://github.com/simbo1905/deleting-dead-code.git ~/.claude/skills/deleting-dead-code
+git clone https://github.com/prompt-cult/deleting-dead-code.git ~/.claude/skills/deleting-dead-code
 ```
 
 **Claude Code (single project):**
 
 ```bash
 mkdir -p .claude/skills
-git clone https://github.com/simbo1905/deleting-dead-code.git .claude/skills/deleting-dead-code
+git clone https://github.com/prompt-cult/deleting-dead-code.git .claude/skills/deleting-dead-code
 ```
 
 **OpenAI Codex CLI:**
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/simbo1905/deleting-dead-code.git ~/.codex/skills/deleting-dead-code
+git clone https://github.com/prompt-cult/deleting-dead-code.git ~/.codex/skills/deleting-dead-code
 ```
 
 **Verdent:**
 
 ```bash
 mkdir -p .verdent/skills/deleting-dead-code
-curl -fsSL https://raw.githubusercontent.com/simbo1905/deleting-dead-code/main/SKILL.md \
+curl -fsSL https://raw.githubusercontent.com/prompt-cult/deleting-dead-code/main/SKILL.md \
   -o .verdent/skills/deleting-dead-code/SKILL.md
 ```
 
@@ -135,12 +135,10 @@ Or install from a versioned, checksum-verifiable release artifact:
 
 ```bash
 TAG="2025.07.14-a1b2c3d"  # replace with the release tag you want
-curl -fsSL "https://github.com/simbo1905/deleting-dead-code/releases/download/${TAG}/deleting-dead-code-${TAG}.tar.gz" \
+curl -fsSL "https://github.com/prompt-cult/deleting-dead-code/releases/download/${TAG}/deleting-dead-code-${TAG}.tar.gz" \
   | tar -xz -C .verdent/skills/
 mv ".verdent/skills/deleting-dead-code-${TAG}" .verdent/skills/deleting-dead-code
 ```
-
-> **Windows users:** the in-repo `.verdent/skills/deleting-dead-code/SKILL.md` is a symlink, which requires Developer Mode to check out correctly. Use the `curl`/release-artifact methods above instead of `git clone`.
 
 ## Releases
 

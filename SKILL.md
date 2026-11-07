@@ -25,8 +25,8 @@ allowed-tools:
   - Grep
   - Glob
 metadata:
-  homepage: https://github.com/simbo1905/deleting-dead-code
-  source: https://github.com/simbo1905/deleting-dead-code
+  homepage: https://github.com/prompt-cult/deleting-dead-code
+  source: https://github.com/prompt-cult/deleting-dead-code
   compatibility:
     - claude-code
     - claude-api
